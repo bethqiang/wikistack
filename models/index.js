@@ -16,7 +16,7 @@ var Page = db.define('page', {
   date: {type: Sequelize.DATE, defaultValue: Sequelize.NOW}
 }, {
     getterMethods: {
-      route: function()  { return '/wiki/' + this.urlTitle }
+      route: function() { return '/wiki/' + this.urlTitle }
     },
     hooks: {
       beforeValidate: function(page, options) {
@@ -28,6 +28,8 @@ var Page = db.define('page', {
       }
     }
   });
+
+Page.belongsTo(User, { as: 'author' });
 
 module.exports = {
   Page: Page,

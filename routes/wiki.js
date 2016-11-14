@@ -1,3 +1,5 @@
+'use strict'
+
 const express = require('express');
 const router = express.Router();
 const models = require('../models');
@@ -5,16 +7,47 @@ const Page = models.Page;
 const User = models.User;
 
 router.get('/', function(req, res, next) {
-  res.redirect('/');
+  Page.findAll({
+  })
+  .then(function(allPages){
+    res.render('index', {
+      // title: allPages.title,
+      // urlTitle: allPages.urlTitle
+      pages: allPages
+    });
+  })
+  .catch(next);
 })
 
 router.post('/', function(req, res, next) {
-  const page = Page.build({
-    title: req.body.title,
-    content: req.body.content,
-    status: req.body.status
-  });
-  page.save()
+  let name = req.body.name;
+  let email = req.body.email;
+  let title = req.body.title;
+  let content = req.body.content;
+  let status = req.body.status;
+
+  User.findOrCreate({
+    where:
+      {
+        name: name,
+        email: email
+      }
+  })
+  .then(function(values) {
+    let user = values[0];
+
+    let page = Page.build({
+      title: title,
+      content: content,
+      status: status
+    });
+
+    return page.save()
+    .then(function(addedPage) {
+      return addedPage.setAuthor(user);
+    }) ;
+
+  })
   .then(function(addedPage) {
     res.redirect(addedPage.route);
   })

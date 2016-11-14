@@ -1,0 +1,7 @@
+<!--{{ usersArticles.name }}-->
+
+<ul>
+  {% for page in usersArticles %}
+    <li><a href="{{ page.route }}">{{ page.title }}</a></li>
+  {% endfor %}
+</ul>
