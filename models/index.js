@@ -53,6 +53,33 @@ const Page = db.define('page', {
           page.urlTitle = Math.random().toString(36).substring(2, 7);
         }
       }
+    },
+    classMethods: {
+      findByTag: function(tag) {
+        return this.findAll({
+          where: {
+            tags: {
+              // overlap matches a set of possibilities
+              // contains???
+              $overlap: [tag]
+            }
+          }
+        })
+      }
+    },
+    instanceMethods: {
+      findSimilar: function() {
+        return Page.findAll({
+          where: {
+            id: {
+              $ne: this.id
+            },
+            tags: {
+              $overlap: this.tags
+            }
+          }
+        })
+      }
     }
   }
 )

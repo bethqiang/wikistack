@@ -67,6 +67,34 @@ router.get('/add', function(req, res, next) {
   res.render('addpage');
 })
 
+// this makes the tag links on individual wikipages break
+router.get('/search', function(req, res, next) {
+  // if you specify a form's method as get, it'll pull its data in the query string as opposed to the req body
+  const tag = req.query.search;
+
+  Page.findByTag(tag)
+  .then(function(pages) {
+    res.render('index', {
+      pages: pages
+    });
+  })
+  .catch(next);
+})
+
+// this makes searching from the search box break
+router.get('/search/:tag', function(req, res, next) {
+  const tag = req.body.tag;
+
+  Page.findByTag(tag)
+  .then(function(pages) {
+    res.render('index', {
+      pages: pages
+    });
+  })
+  .catch(next);
+})
+// having both prevents results from showing up when you click on a tag in an article
+
 // /add needs to be above /:urlTitle
 // every time we go to /add, JS will think that add is the urlTitle
 // & will try to send back an article called 'add'
@@ -90,6 +118,27 @@ router.get('/:urlTitle', function(req, res, next) {
     res.render('wikipage', {
       page: page
     });
+  })
+  .catch(next);
+})
+
+router.get('/:urlTitle/similar', function(req, res, next) {
+  Page.findOne({
+    where: {
+      urlTitle: req.params.urlTitle
+    }
+  })
+  .then(function(page) {
+    if (page === null) {
+      return next(new Error('That page was not found!'));
+    } else {
+      return page.findSimilar()
+      .then(function(pages) {
+        res.render('index', {
+          pages: pages
+        })
+      })
+    }
   })
   .catch(next);
 })
