@@ -81,20 +81,6 @@ router.get('/search', function(req, res, next) {
   .catch(next);
 })
 
-// this makes searching from the search box break
-router.get('/search/:tag', function(req, res, next) {
-  const tag = req.body.tag;
-
-  Page.findByTag(tag)
-  .then(function(pages) {
-    res.render('index', {
-      pages: pages
-    });
-  })
-  .catch(next);
-})
-// having both prevents results from showing up when you click on a tag in an article
-
 // /add needs to be above /:urlTitle
 // every time we go to /add, JS will think that add is the urlTitle
 // & will try to send back an article called 'add'
