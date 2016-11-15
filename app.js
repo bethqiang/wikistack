@@ -1,41 +1,69 @@
+'use strict'
+
 const express = require('express');
 const app = express();
 const port = 3000;
-const nunjucks = require('nunjucks');
-const wikiRoutes = require('./routes/wiki');
-const UserRoutes = require('./routes/users');
-const bodyParser = require('body-parser');
-const morgan = require('morgan');
-const models = require('./models');
 
-app.use(morgan('combined'));
-app.use(express.static('public'));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use('/wiki', wikiRoutes);
-app.use('/users', UserRoutes);
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+
+const nunjucks = require('nunjucks');
+
+const path = require('path');
+module.exports = app;
+
+//required routes
+const wikiRouter = require('./routes/wiki');
+const userRouter = require('./routes/users');
 
 // set up nunjucks
+// have res.render work with html files
+app.set('view engine', 'html');
+// when giving html files to res.render, tell it to use nunjucks
+app.engine('html', nunjucks.render);
+// point nunjucks to the directory containing templates and turn off caching
+// configure returns an Environment instance, which we'll want to use to add Markdown support later
 const env = nunjucks.configure('views', { noCache: true });
-app.set('view engine', 'html'); // have res.render work with html files
-app.engine('html', nunjucks.render); // when giving html files to res.render, tell it to use nunjucks
+
+// middleware
+//logging middleware
+app.use(morgan('dev'));
+// static middleware
+app.use(express.static(path.join(__dirname, './public')));
+// body parsing middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// routes
+app.use('/wiki', wikiRouter);
+// or, in one line: app.use('/wiki', require('./routes/wiki'));
+app.use('/users', userRouter);
+
+// models
+const models = require('./models');
+const Page = models.Page;
+const User = models.User;
 
 // basic route, to be deleted and/or moved to routes folder
-// app.get('/', function(req, res) {
-//   res.send("Hello, world!")
-// });
-
-models.User.sync({})
-.then(function () {
-  return models.Page.sync({})
+app.get('/', function(req, res, next) {
+  res.send('Hello, world!');
 })
-.then(function () {
-  app.listen(port, function () {
-    console.log('Server listening on port ' + port);
-  });
+
+// sync models
+User.sync()
+.then(function() {
+  return Page.sync()
+})
+.then(function() {
+  // inside here because we only want the server to start once both of our models have synced
+  app.listen(port, function() {
+    console.log('Listening on port ' + port);
+  })
 })
 .catch(console.error);
 
+// error handling middleware NEEDS TO HAVE 4 arguments ALWAYS
 app.use('/', function(err, req, res, next) {
-  console.error(err);
+  console.log(err);
+  res.status(500).send(err.message);
 })

@@ -1,15 +1,14 @@
 'use strict'
 
 const express = require('express');
-const userRouter = express.Router();
+const router = express.Router();
+
 const models = require('../models');
 const Page = models.Page;
 const User = models.User;
 
-userRouter.get('/', function(req, res, next) {
-  User.findAll({
-
-  })
+router.get('/', function(req, res, next) {
+  User.findAll({})
   .then(function(users) {
     res.render('users', {
       users: users
@@ -18,18 +17,27 @@ userRouter.get('/', function(req, res, next) {
   .catch(next);
 })
 
-userRouter.get('/:id', function(req, res, next) {
-  let id = req.params.id;
-  Page.findAll({
+router.get('/:userId', function(req, res, next) {
+  const findUser = User.findById(req.params.userId)
+
+  const findPages = Page.findAll({
     where: {
-      authorId: id
+      authorId: req.params.userId
     }
   })
-  .then(function(usersArticles) {
-    res.render('usersid', {
-      usersArticles: usersArticles
+
+  // Promise.all is included in ES6! Woo!
+  Promise.all([findUser, findPages])
+  // could also use bluebird .spread here (see wiki.js for more details)
+  .then(function(result) {
+    // ES6 syntax, woo!
+    const [user, pages] = result;
+    res.render('userpages', {
+      user: user,
+      pages: pages
     })
   })
+  .catch(next);
 })
 
-module.exports = userRouter;
+module.exports = router;
