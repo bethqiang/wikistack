@@ -15,7 +15,24 @@ const Page = db.define('page', {
   title: { type: Sequelize.STRING, allowNull: false },
   urlTitle: { type: Sequelize.STRING, allowNull: false },
   content: { type: Sequelize.TEXT, allowNull: false },
-  status: { type: Sequelize.ENUM('open', 'closed') }
+  status: { type: Sequelize.ENUM('open', 'closed') },
+  tags: {
+    type: Sequelize.ARRAY(Sequelize.TEXT),
+    defaultValue: [],
+    set: function(tags) {
+      tags = tags || [];
+      // don't want to do anythign with it if it's already an array
+      if (typeof tags === 'string') {
+        tags = tags.split(',').map(function(str) {
+          return str.trim();
+        })
+      }
+      // can't use this.tags = tags here because that will trigger this function to be called again
+      // and will wind up in an infinite loop
+      // setDataValue is a built in method to prevent that
+      this.setDataValue('tags', tags);
+    }
+  }
 }, {
     // virtual field - why:
     // when you want to have a property on your instance where we want to be able to say, let's go get that value off of the page, but it's always derived from other information on the page

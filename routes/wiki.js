@@ -31,6 +31,7 @@ router.post('/', function(req, res, next) {
   const title = req.body.title;
   const content = req.body.content;
   const status = req.body.status;
+  const tags = req.body.tags;
 
   // findOrCreate - if the name & email already exists, we'll resolve to that user
   // if it does find it, it'll create a new user and give us that back
@@ -48,7 +49,8 @@ router.post('/', function(req, res, next) {
       // you can just pass in req.body here instead of listing them out individually
       title: title,
       content: content,
-      status: status
+      status: status,
+      tags: tags
     })
     .then(function(addedPage) {
       // takes id of the user & puts it as authorId of the page
