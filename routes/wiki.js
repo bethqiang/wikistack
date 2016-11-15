@@ -59,16 +59,6 @@ router.post('/', function(req, res, next) {
     res.redirect(addedPage.route);
   })
   .catch(next);
-
-  // Page.create({
-  //   title: title,
-  //   content: content,
-  //   status: status
-  // })
-  // .then(function(page) {
-  //   res.redirect(page.route);
-  // })
-  // .catch(next);
 })
 
 router.get('/add', function(req, res, next) {
@@ -83,7 +73,13 @@ router.get('/:urlTitle', function(req, res, next) {
   Page.findOne({
     where: {
       urlTitle: req.params.urlTitle
-    }
+    },
+    // "outer join" of user table on User.id & Page.authorId
+    // everything on User will now be available under the property "author"
+    // ex. page.author.name = User.name
+    include: [
+      {model: User, as: 'author'}
+    ]
   })
   .then(function(page) {
     if (page === null) {
