@@ -1,10 +1,22 @@
 'use strict'
 
 const Sequelize = require('sequelize');
-const db = new Sequelize('postgres://localhost:5432/wikistack', {
-  // if we don't want to print the SQL command text of each query
-  logging: false
-});
+const testDB = 'postgres://localhost:5432/wikistack-testing';
+const devDB = 'postgres://localhost:5432/wikistack';
+
+// use a different database for testing
+// connected to the test script in package.json
+let db;
+if (process.env.MODE === 'testing') {
+  db = new Sequelize(testDB, {
+    logging: false
+  });
+} else {
+  db = new Sequelize(devDB, {
+    logging: false
+  });
+}
+// logging: false turns off the printing of the SQL command text of each query
 
 // each definition has 3 object arguments:
 // 1. 'user', 'page', etc.
